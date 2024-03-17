@@ -7,7 +7,6 @@ import { baremuxPath } from "@mercuryworkshop/bare-mux";
 import { join } from "node:path";
 import { hostname } from "node:os";
 import wisp from "wisp-server-node";
-import minify from "express-minify";
 import compression from "compression";
 
 
@@ -47,32 +46,6 @@ if (process.pkg) {
 const app = express();
 
 // improve performance
-app.use(function(req, res, next)
-{
-  // do not minify preminified files
-  if (/\.min\.(css|js)$/.test(req.url)) {
-    res.minifyOptions = res.minifyOptions || {};
-    res.minifyOptions.minify = false;
-  }
-  // do not minify service worker files
-  if (/sw\.js$/.test(req.url)) {
-    res.minifyOptions = res.minifyOptions || {};
-    res.minifyOptions.minify = false;
-  }
-  next();
-});
-app.use(minify({
-  cache: false,
-  uglifyJsModule: null,
-  errorHandler: null,
-  jsMatch: /javascript/,
-  cssMatch: /css/,
-  jsonMatch: /json/,
-  sassMatch: /scss/,
-  lessMatch: /less/,
-  stylusMatch: /stylus/,
-  coffeeScriptMatch: /coffeescript/,
-}));
 app.use(compression());
 
 // Load our publicPath first and prioritize it over UV.
