@@ -48,6 +48,9 @@ importers:
       '@yao-pkg/pkg':
         specifier: ^5.11.5
         version: 5.11.5
+      bpkg:
+        specifier: ^0.9.2
+        version: 0.9.2
       eslint:
         specifier: ^8.36.0
         version: 8.57.0
@@ -1824,6 +1827,12 @@ packages:
     transitivePeerDependencies:
       - supports-color
     dev: false
+
+  /bpkg@0.9.2:
+    resolution: {integrity: sha512-fuX4vHntn7xG4xIvkWP6Y48ZzcYzp2guXxjKUgT3cdq9hRHO48UM6xuow5zLUKpMloN7tgZdVaBS39r/QxC9AA==}
+    engines: {node: '>=8.0.0'}
+    hasBin: true
+    dev: true
 
   /bplist-parser@0.2.0:
     resolution: {integrity: sha512-z0M+byMThzQmD9NILRniCUXYsYpjwnlO8N5uCFaCqIOpqRsJCrQL9NK3JsD67CN5a08nF5oIL2bD6loTdHOuKw==}
