@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 import { relative } from 'path';
 import { mkdir, rm } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import { exec as pkgBuild } from "@yao-pkg/pkg";
 
 // after this module is npm or pnpm installed, we don't use these and instead just want the symlinks/files in node_modules
 // import { publicPath } from "ultraviolet-static";
@@ -57,3 +58,23 @@ await build({
   target: ['node16'],
   outfile: 'dist/bundle.js',
 });
+
+// next: pkg
+const pkgArguments = [
+  'dist/bundle.js',
+  '--config',
+  'pkg-config.json',
+];
+
+if (!isDevelopment) {
+  pkgArguments.push(
+    '--compress',
+    'Brotli'
+  );
+}
+
+await pkgBuild(pkgArguments);
+
+// finally, do executable packing
+
+// now chmod the final executable and we are done

@@ -9,8 +9,8 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "build": "node scripts/build.js && pkg --compress Brotli .",
-    "dev": "node scripts/build.js --dev && pkg -d --public ."
+    "build": "node scripts/build.js",
+    "dev": "node scripts/build.js --dev"
   },
   "keywords": [
     "proxy"
@@ -31,25 +31,5 @@
     "esbuild": "^0.19.11",
     "eslint": "^8.36.0",
     "prettier": "^2.8.4"
-  },
-  "bin": "./dist/bundle.js",
-  "pkg": {
-    "scripts": [
-      "!node_modules/ultraviolet-static/public/*.js",
-      "!node_modules/@titaniumnetwork-dev/ultraviolet/dist/*.js",
-      "!node_modules/@mercuryworkshop/epoxy-transport/dist/*.js",
-      "!node_modules/@mercuryworkshop/bare-mux/dist/*.js"
-    ],
-    "assets": [
-      "node_modules/ultraviolet-static/public/*",
-      "node_modules/@titaniumnetwork-dev/ultraviolet/dist/*",
-      "node_modules/@mercuryworkshop/epoxy-transport/dist/*",
-      "node_modules/@mercuryworkshop/bare-mux/dist/*"
-    ],
-    "targets": [
-      "node16-linux-x64",
-      "node16-win-x64"
-    ],
-    "outputPath": "dist"
   }
 }
