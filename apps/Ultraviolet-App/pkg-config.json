@@ -1,13 +1,7 @@
 {
   "pkg": {
-    "scripts": [
-      "!node_modules/ultraviolet-static/public/*.js",
-      "!node_modules/@titaniumnetwork-dev/ultraviolet/dist/*.js",
-      "!node_modules/@mercuryworkshop/epoxy-transport/dist/*.js",
-      "!node_modules/@mercuryworkshop/bare-mux/dist/*.js"
-    ],
     "assets": [
-      "node_modules/ultraviolet-static/public/*",
+      "node_modules/ultraviolet-static/public/**",
       "node_modules/@titaniumnetwork-dev/ultraviolet/dist/*",
       "node_modules/@mercuryworkshop/epoxy-transport/dist/*",
       "node_modules/@mercuryworkshop/bare-mux/dist/*"

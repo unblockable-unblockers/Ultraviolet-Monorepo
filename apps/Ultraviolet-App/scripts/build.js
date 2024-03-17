@@ -71,6 +71,10 @@ if (!isDevelopment) {
     '--compress',
     'Brotli'
   );
+} else {
+  pkgArguments.push(
+    '--debug'
+  );
 }
 
 await pkgBuild(pkgArguments);
