@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node src/index.js",
-    "build": "pkg -d --public-packages \"*\" ."
+    "build": "node scripts/build.js && pkg  --compress Brotli --public-packages \"*\" ."
   },
   "keywords": [
     "proxy"
@@ -27,14 +27,13 @@
   },
   "devDependencies": {
     "@yao-pkg/pkg": "^5.11.5",
+    "esbuild": "^0.19.11",
     "eslint": "^8.36.0",
     "prettier": "^2.8.4"
   },
-  "bin": "./src/index.js",
+  "bin": "./dist/bundle.js",
   "pkg": {
     "scripts": [
-      "./node_modules/@mercuryworkshop/bare-mux/lib/index.cjs",
-      "./node_modules/@mercuryworkshop/epoxy-transport/lib/index.cjs",
       "!./node_modules/**/dist/*",
       "!./node_modules/**/public/*"
     ],

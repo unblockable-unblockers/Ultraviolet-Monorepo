@@ -8,19 +8,25 @@ import { join } from "node:path";
 import { hostname } from "node:os";
 import wisp from "wisp-server-node"
 
+// injection point
+const usablePublicPath = process.env.OVERRIDE_PUBLIC_PATH ?? publicPath;
+const usableUvPath = process.env.OVERRIDE_UV_PATH ?? uvPath;
+const usableEpoxyPath = process.env.OVERRIDE_EPOXY_PATH ?? epoxyPath;
+const usableBaremuxPath = process.env.OVERRIDE_BAREMUX_PATH ?? baremuxPath;
+
 const app = express();
 // Load our publicPath first and prioritize it over UV.
-app.use(express.static(publicPath));
+app.use(express.static(usablePublicPath));
 // Load vendor files last.
 // The vendor's uv.config.js won't conflict with our uv.config.js inside the publicPath directory.
-app.use("/uv/", express.static(uvPath));
-app.use("/epoxy/", express.static(epoxyPath));
-app.use("/baremux/", express.static(baremuxPath));
+app.use("/uv/", express.static(usableUvPath));
+app.use("/epoxy/", express.static(usableEpoxyPath));
+app.use("/baremux/", express.static(usableBaremuxPath));
 
 // Error for everything else
 app.use((req, res) => {
   res.status(404);
-  res.sendFile(join(publicPath, "404.html"));
+  res.sendFile(join(usablePublicPath, "404.html"));
 });
 
 const server = createServer();
