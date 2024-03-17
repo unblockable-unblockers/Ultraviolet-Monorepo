@@ -79,3 +79,7 @@ Learn more about the power of Turborepo:
 - [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
 - [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
 - [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
+
+## On Replit
+
+Replit seems to have some internal system for killing anything it thinks is a proxy. So we use pkg to wrap it up in a way that it will not recognize.
