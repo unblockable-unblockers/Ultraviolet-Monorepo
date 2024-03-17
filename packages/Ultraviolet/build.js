@@ -17,7 +17,7 @@ await copyFile('src/uv.config.js', 'dist/uv.config.js');
 
 await build({
     platform: 'browser',
-    sourcemap: true,
+    sourcemap: isDevelopment,
     minify: !isDevelopment,
     entryPoints: {
         'uv.bundle': './src/rewrite/index.js',

@@ -3,7 +3,8 @@
   "private": true,
   "scripts": {
     "start": "turbo start",
-    "build": "turbo build"
+    "build": "turbo build",
+    "dev": "turbo dev"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
