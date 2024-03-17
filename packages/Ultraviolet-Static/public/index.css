@@ -21,7 +21,6 @@ body {
 .header-center {
   align-items: center;
   flex-direction: column;
-  margin-top: 10%;
 }
 
 .left-margin {
@@ -193,4 +192,16 @@ footer a:hover {
 
 .credit input:checked ~ pre {
   display: block;
+}
+
+.ad-box {
+  width: 100%;
+  margin-top: auto;
+  margin-bottom: auto;
+  background: #ffffff;
+}
+
+.ad-apology {
+  color: #555555;
+  margin: 0;
 }
