@@ -1,5 +1,5 @@
 language = "nix"
-run = ["npm", "i", "-g", "pnpm", "&&", "pnpm", "start"]
+run = ["npm", "start"]
 
 [packager]
 language = "nodejs-npm"
