@@ -10,7 +10,7 @@
   "scripts": {
     "start": "node src/index.js",
     "build": "node scripts/build.js",
-    "dev": "node scripts/build.js --dev"
+    "build-dev": "node scripts/build.js --dev"
   },
   "keywords": [
     "proxy"
@@ -22,6 +22,7 @@
     "@mercuryworkshop/epoxy-transport": "^1.0.2",
     "@titaniumnetwork-dev/ultraviolet": "workspace:*",
     "compression": "^1.7.4",
+    "cookie-parser": "^1.4.6",
     "express": "^4.18.2",
     "ultraviolet-static": "workspace:*",
     "wisp-server-node": "^1.0.1",

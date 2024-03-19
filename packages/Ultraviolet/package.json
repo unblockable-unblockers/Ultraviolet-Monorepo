@@ -15,7 +15,7 @@
     "type": "module",
     "scripts": {
         "build": "rimraf dist/ && node build.js",
-        "dev": "rimraf dist/ && node build.js --dev",
+        "build-dev": "rimraf dist/ && node build.js --dev",
         "publish": "npm run build && npm publish --access public"
     },
     "dependencies": {

@@ -8,7 +8,10 @@ import { join } from "node:path";
 import { hostname } from "node:os";
 import wisp from "wisp-server-node";
 import compression from "compression";
+import cookieParser from "cookie-parser";
 
+const runningInReplit = !!process.env.REPLIT_DB_URL;
+const runningInPkg = !!process.pkg;
 
 // injection point
 let usablePublicPath = process.env.OVERRIDE_PUBLIC_PATH ?? publicPath;
@@ -17,7 +20,7 @@ let usableEpoxyPath = process.env.OVERRIDE_EPOXY_PATH ?? epoxyPath;
 let usableBaremuxPath = process.env.OVERRIDE_BAREMUX_PATH ?? baremuxPath;
 
 // make our paths relative if we are in a pkg environment
-if (process.pkg) {
+if (runningInPkg) {
   const srcFolderPackaged = join(process.pkg.defaultEntrypoint, "..");
 
   // first thing: make sure the paths are native to the os (have the correct separators)
@@ -47,6 +50,24 @@ const app = express();
 
 // improve performance
 app.use(compression());
+
+// cookies
+app.use(cookieParser());
+app.use((req, res, next) => {
+  if (!!process.env.SINGLE_PAGE_PROXY) {
+    let singlePageProxy;
+    try {
+      singlePageProxy = new URL(process.env.SINGLE_PAGE_PROXY);
+    } catch (e) {
+      console.log("Invalid SINGLE_PAGE_PROXY environment variable");
+    }
+    if (singlePageProxy) {
+      res.cookie("singlePageProxy", singlePageProxy.href);
+    }
+  }
+
+  next();
+});
 
 // Load our publicPath first and prioritize it over UV.
 app.use(express.static(usablePublicPath));
@@ -78,21 +99,31 @@ server.on("upgrade", (req, socket, head) => {
 });
 
 let port = parseInt(process.env.UV_PORT || "");
-
 if (isNaN(port)) port = 8080;
+let host = process.env.UV_HOST || "0.0.0.0";
 
 server.on("listening", () => {
-  const address = server.address();
+  if (!runningInReplit) {
+    const address = server.address();
 
-  // by default we are listening on 0.0.0.0 (every interface)
-  // we just need to list a few
-  console.log("Listening on:");
-  console.log(`\thttp://localhost:${address.port}`);
-  console.log(`\thttp://${hostname()}:${address.port}`);
-  console.log(
-    `\thttp://${address.family === "IPv6" ? `[${address.address}]` : address.address
-    }:${address.port}`
-  );
+    // by default we are listening on 0.0.0.0 (every interface)
+    // we just need to list a few
+    console.log("Listening on:");
+    if (host === "0.0.0.0") {
+      console.log(`\thttp://localhost:${address.port}`);
+      console.log(`\thttp://${hostname()}:${address.port}`);
+      console.log(
+        `\thttp://${address.family === "IPv6" ? `[${address.address}]` : address.address
+        }:${address.port}`
+      );
+    } else {
+      console.log(`\thttp://${host}:${address.port}`);
+    }
+  } else {
+    console.log("REPLIT DETECTED");
+    console.log("Listening on port " + port);
+    console.log("Click \x1b[4m\"New Tab\"\x1b[0m to use Ultraviolet");
+  }
 });
 
 // https://expressjs.com/en/advanced/healthcheck-graceful-shutdown.html
@@ -106,5 +137,6 @@ function shutdown() {
 }
 
 server.listen({
-  port,
+  port: port,
+  host: host,
 });

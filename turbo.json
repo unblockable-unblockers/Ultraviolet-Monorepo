@@ -6,12 +6,12 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**"]
     },
-    "dev": {
-      "dependsOn": ["^dev"],
+    "build-dev": {
+      "dependsOn": ["^build-dev"],
       "outputs": ["dist/**"]
     },
     "start": {
-      "dependsOn": ["^dev"],
+      "dependsOn": ["^build-dev"],
       "cache": false,
       "persistent": true
     }

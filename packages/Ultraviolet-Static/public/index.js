@@ -20,9 +20,19 @@ const error = document.getElementById("uv-error");
  */
 const errorCode = document.getElementById("uv-error-code");
 
-form.addEventListener("submit", async (event) => {
-  event.preventDefault();
+/**
+ * Gets the current URL of the UV Frame
+ * @returns {*|boolean|string}
+ */
+function getUvUrl() {
+  return document.getElementById("uv-frame").src;
+}
 
+/**
+ * Setups up Ultraviolet for use & sets page to URL
+ * @param {string} url
+ */
+async function setUvUrl(url) {
   try {
     await registerSW();
   } catch (err) {
@@ -31,9 +41,19 @@ form.addEventListener("submit", async (event) => {
     throw err;
   }
 
-  const url = search(address.value, searchEngine.value);
-
   let frame = document.getElementById("uv-frame");
   frame.style.display = "block";
   frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const maybeSetUrl = Cookies.get("singlePageProxy");
+  if (maybeSetUrl && !getUvUrl()) {
+    await setUvUrl(maybeSetUrl);
+  }
+});
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const url = search(address.value, searchEngine.value);
+  await setUvUrl(url);
 });
