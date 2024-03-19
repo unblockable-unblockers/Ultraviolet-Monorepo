@@ -45,6 +45,8 @@ function getFrame() {
  * @param {string} url
  */
 async function setUvUrl(url) {
+  mixpanel.track("Set Initial URL", {"url": url});
+
   try {
     await registerSW();
   } catch (err) {
@@ -57,6 +59,14 @@ async function setUvUrl(url) {
   frameHolder.style.display = "block";
   let frame = getFrame();
   frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
+}
+
+/**
+ * Sync shortcut to go to a uv page.
+ * @param {string} url
+ */
+function uvGo(url) {
+  setUvUrl(url);
 }
 
 /*

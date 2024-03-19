@@ -21,6 +21,7 @@ body {
 .header-center {
   align-items: center;
   flex-direction: column;
+  margin-top: 10%;
 }
 
 .left-margin {
@@ -90,9 +91,12 @@ body {
   color: #fff;
 }
 
-.logo-wrapper h1 {
+.logo-wrapper .heading {
   color: white;
+  margin: auto;
 }
+
+
 
 footer {
   margin: 0 5vw;
