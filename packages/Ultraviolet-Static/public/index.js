@@ -41,8 +41,9 @@ async function setUvUrl(url) {
     throw err;
   }
 
+  let frameHolder = document.getElementById("uv-frame-holder");
+  frameHolder.style.display = "block";
   let frame = document.getElementById("uv-frame");
-  frame.style.display = "block";
   frame.src = __uv$config.prefix + __uv$config.encodeUrl(url);
 }
 
