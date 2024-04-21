@@ -19,6 +19,10 @@ let usableUvPath = process.env.OVERRIDE_UV_PATH ?? uvPath;
 let usableEpoxyPath = process.env.OVERRIDE_EPOXY_PATH ?? epoxyPath;
 let usableBaremuxPath = process.env.OVERRIDE_BAREMUX_PATH ?? baremuxPath;
 
+// single page proxy
+let maybeSinglePageProxy = process.env.SINGLE_PAGE_PROXY;
+let singlePageProxy = !!maybeSinglePageProxy ? new URL(maybeSinglePageProxy) : null;
+
 // make our paths relative if we are in a pkg environment
 if (runningInPkg) {
   const srcFolderPackaged = join(process.pkg.defaultEntrypoint, "..");
@@ -54,16 +58,11 @@ app.use(compression());
 // cookies
 app.use(cookieParser());
 app.use((req, res, next) => {
-  if (!!process.env.SINGLE_PAGE_PROXY) {
-    let singlePageProxy;
-    try {
-      singlePageProxy = new URL(process.env.SINGLE_PAGE_PROXY);
-    } catch (e) {
-      console.log("Invalid SINGLE_PAGE_PROXY environment variable");
-    }
-    if (singlePageProxy) {
-      res.cookie("singlePageProxy", singlePageProxy.href);
-    }
+  if (singlePageProxy) {
+    res.cookie("singlePageProxy", singlePageProxy.href);
+  } else {
+    // clear the cookie
+    res.clearCookie("singlePageProxy");
   }
 
   next();
