@@ -1,6 +1,5 @@
 import express from "express";
 import { createServer } from "node:http";
-import { getPortPromise, setBasePort } from "portfinder";
 import { publicPath } from "ultraviolet-static";
 import { uvPath } from "@titaniumnetwork-dev/ultraviolet";
 import { epoxyPath } from "@mercuryworkshop/epoxy-transport";
@@ -11,146 +10,132 @@ import wisp from "wisp-server-node";
 import compression from "compression";
 import cookieParser from "cookie-parser";
 
-(async () => {
-  const runningInReplit = !!process.env.REPLIT_DB_URL;
-  const runningInPkg = !!process.pkg;
+const runningInReplit = !!process.env.REPLIT_DB_URL;
+const runningInPkg = !!process.pkg;
 
-  // injection point
-  let usablePublicPath = process.env.OVERRIDE_PUBLIC_PATH ?? publicPath;
-  let usableUvPath = process.env.OVERRIDE_UV_PATH ?? uvPath;
-  let usableEpoxyPath = process.env.OVERRIDE_EPOXY_PATH ?? epoxyPath;
-  let usableBaremuxPath = process.env.OVERRIDE_BAREMUX_PATH ?? baremuxPath;
+// injection point
+let usablePublicPath = process.env.OVERRIDE_PUBLIC_PATH ?? publicPath;
+let usableUvPath = process.env.OVERRIDE_UV_PATH ?? uvPath;
+let usableEpoxyPath = process.env.OVERRIDE_EPOXY_PATH ?? epoxyPath;
+let usableBaremuxPath = process.env.OVERRIDE_BAREMUX_PATH ?? baremuxPath;
 
-  // single page proxy
-  let maybeSinglePageProxy = process.env.SINGLE_PAGE_PROXY;
-  let singlePageProxy = !!maybeSinglePageProxy ? new URL(maybeSinglePageProxy) : null;
+// single page proxy
+let maybeSinglePageProxy = process.env.SINGLE_PAGE_PROXY;
+let singlePageProxy = !!maybeSinglePageProxy ? new URL(maybeSinglePageProxy) : null;
 
-  // make our paths relative if we are in a pkg environment
-  if (runningInPkg) {
-    const srcFolderPackaged = join(process.pkg.defaultEntrypoint, "..");
+// make our paths relative if we are in a pkg environment
+if (runningInPkg) {
+  const srcFolderPackaged = join(process.pkg.defaultEntrypoint, "..");
 
-    // first thing: make sure the paths are native to the os (have the correct separators)
-    if (process.platform === "win32") {
-      usablePublicPath = usablePublicPath.replace(/\//g, "\\");
-      usableUvPath = usableUvPath.replace(/\//g, "\\");
-      usableEpoxyPath = usableEpoxyPath.replace(/\//g, "\\");
-      usableBaremuxPath = usableBaremuxPath.replace(/\//g, "\\");
-    } else {
-      usablePublicPath = usablePublicPath.replace(/\\/g, "/");
-      usableUvPath = usableUvPath.replace(/\\/g, "/");
-      usableEpoxyPath = usableEpoxyPath.replace(/\\/g, "/");
-      usableBaremuxPath = usableBaremuxPath.replace(/\\/g, "/");
-    }
-
-    // second thing: make them relative to the executable, ready to serve
-    usablePublicPath = join(srcFolderPackaged, usablePublicPath);
-    usableUvPath = join(srcFolderPackaged, usableUvPath);
-    usableEpoxyPath = join(srcFolderPackaged, usableEpoxyPath);
-    usableBaremuxPath = join(srcFolderPackaged, usableBaremuxPath);
+  // first thing: make sure the paths are native to the os (have the correct separators)
+  if (process.platform === "win32") {
+    usablePublicPath = usablePublicPath.replace(/\//g, "\\");
+    usableUvPath = usableUvPath.replace(/\//g, "\\");
+    usableEpoxyPath = usableEpoxyPath.replace(/\//g, "\\");
+    usableBaremuxPath = usableBaremuxPath.replace(/\//g, "\\");
+  } else {
+    usablePublicPath = usablePublicPath.replace(/\\/g, "/");
+    usableUvPath = usableUvPath.replace(/\\/g, "/");
+    usableEpoxyPath = usableEpoxyPath.replace(/\\/g, "/");
+    usableBaremuxPath = usableBaremuxPath.replace(/\\/g, "/");
   }
 
-  // possible iffy point: file permissions? does it matter which os the pkg is built on? oh well, can't test fully.
-  // will just publish binaries for windows and linux and hope for the best
+  // second thing: make them relative to the executable, ready to serve
+  usablePublicPath = join(srcFolderPackaged, usablePublicPath);
+  usableUvPath = join(srcFolderPackaged, usableUvPath);
+  usableEpoxyPath = join(srcFolderPackaged, usableEpoxyPath);
+  usableBaremuxPath = join(srcFolderPackaged, usableBaremuxPath);
+}
 
-  const app = express();
+// possible iffy point: file permissions? does it matter which os the pkg is built on? oh well, can't test fully.
+// will just publish binaries for windows and linux and hope for the best
 
-  // improve performance
-  app.use(compression());
+const app = express();
 
-  // cookies
-  app.use(cookieParser());
-  app.use((req, res, next) => {
-    if (singlePageProxy) {
-      res.cookie("singlePageProxy", singlePageProxy.href);
-    } else {
-      // clear the cookie
-      res.clearCookie("singlePageProxy");
-    }
+// improve performance
+app.use(compression());
 
-    next();
-  });
-
-  // Load our publicPath first and prioritize it over UV.
-  app.use(express.static(usablePublicPath));
-  // Load vendor files last.
-  // The vendor's uv.config.js won't conflict with our uv.config.js inside the publicPath directory.
-  app.use("/uv/", express.static(usableUvPath));
-  app.use("/epoxy/", express.static(usableEpoxyPath));
-  app.use("/baremux/", express.static(usableBaremuxPath));
-
-  // Error for everything else
-  app.use((req, res) => {
-    res.status(404);
-    res.sendFile(join(usablePublicPath, "404.html"));
-  });
-
-  const server = createServer();
-
-  server.on("request", (req, res) => {
-    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-    res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-    app(req, res);
-  });
-
-  server.on("upgrade", (req, socket, head) => {
-    if (req.url.endsWith("/wisp/"))
-      wisp.routeRequest(req, socket, head);
-    else
-      socket.end();
-  });
-
-  let port = parseInt(process.env.UV_PORT || "");
-  const allowPortIncrement = !process.env.UV_ALLOW_PORT_INCREMENT;
-  if (isNaN(port)) port = 8080;
-  const initialPort = port;
-  let host = process.env.UV_HOST || "0.0.0.0";
-
-  if (allowPortIncrement) {
-    setBasePort(port);
-    await getPortPromise().then((newPort) => {
-      port = newPort;
-    });
-    if (port !== initialPort) {
-      console.warn(`Port ${initialPort} is in use. Using port ${port} instead.`);
-    }
+// cookies
+app.use(cookieParser());
+app.use((req, res, next) => {
+  if (singlePageProxy) {
+    res.cookie("singlePageProxy", singlePageProxy.href);
+  } else {
+    // clear the cookie
+    res.clearCookie("singlePageProxy");
   }
 
-  server.on("listening", () => {
-    if (!runningInReplit) {
-      const address = server.address();
+  next();
+});
 
-      // by default we are listening on 0.0.0.0 (every interface)
-      // we just need to list a few
-      console.log("Listening on:");
-      if (host === "0.0.0.0") {
-        console.log(`\thttp://localhost:${address.port}`);
-        console.log(`\thttp://${hostname()}:${address.port}`);
-        console.log(
-          `\thttp://${address.family === "IPv6" ? `[${address.address}]` : address.address
-          }:${address.port}`
-        );
-      } else {
-        console.log(`\thttp://${host}:${address.port}`);
-      }
+// Load our publicPath first and prioritize it over UV.
+app.use(express.static(usablePublicPath));
+// Load vendor files last.
+// The vendor's uv.config.js won't conflict with our uv.config.js inside the publicPath directory.
+app.use("/uv/", express.static(usableUvPath));
+app.use("/epoxy/", express.static(usableEpoxyPath));
+app.use("/baremux/", express.static(usableBaremuxPath));
+
+// Error for everything else
+app.use((req, res) => {
+  res.status(404);
+  res.sendFile(join(usablePublicPath, "404.html"));
+});
+
+const server = createServer();
+
+server.on("request", (req, res) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+  res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+  app(req, res);
+});
+
+server.on("upgrade", (req, socket, head) => {
+  if (req.url.endsWith("/wisp/"))
+    wisp.routeRequest(req, socket, head);
+  else
+    socket.end();
+});
+
+let port = parseInt(process.env.UV_PORT || "");
+if (isNaN(port)) port = 8080;
+let host = process.env.UV_HOST || "0.0.0.0";
+
+server.on("listening", () => {
+  if (!runningInReplit) {
+    const address = server.address();
+
+    // by default we are listening on 0.0.0.0 (every interface)
+    // we just need to list a few
+    console.log("Listening on:");
+    if (host === "0.0.0.0") {
+      console.log(`\thttp://localhost:${address.port}`);
+      console.log(`\thttp://${hostname()}:${address.port}`);
+      console.log(
+        `\thttp://${address.family === "IPv6" ? `[${address.address}]` : address.address
+        }:${address.port}`
+      );
     } else {
-      console.log("REPLIT DETECTED");
-      console.log("Listening on port " + port);
-      console.log("Click \x1b[4m\"New Tab\"\x1b[0m to use Ultraviolet");
+      console.log(`\thttp://${host}:${address.port}`);
     }
-  });
-
-  // https://expressjs.com/en/advanced/healthcheck-graceful-shutdown.html
-  process.on("SIGINT", shutdown);
-  process.on("SIGTERM", shutdown);
-
-  function shutdown() {
-    console.log("SIGTERM signal received: closing HTTP server");
-    server.close();
-    process.exit(0);
+  } else {
+    console.log("REPLIT DETECTED");
+    console.log("Listening on port " + port);
+    console.log("Click \x1b[4m\"New Tab\"\x1b[0m to use Ultraviolet");
   }
+});
 
-  server.listen({
-    port: port,
-    host: host,
-  });
-})();
+// https://expressjs.com/en/advanced/healthcheck-graceful-shutdown.html
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);
+
+function shutdown() {
+  console.log("SIGTERM signal received: closing HTTP server");
+  server.close();
+  process.exit(0);
+}
+
+server.listen({
+  port: port,
+  host: host,
+});
