@@ -20,7 +20,7 @@ let usableEpoxyPath = process.env.OVERRIDE_EPOXY_PATH ?? epoxyPath;
 let usableBaremuxPath = process.env.OVERRIDE_BAREMUX_PATH ?? baremuxPath;
 
 // single page proxy
-let maybeSinglePageProxy = process.env.SINGLE_PAGE_PROXY;
+let maybeSinglePageProxy = process.env.SINGLE_PAGE_PROXY ?? process.env.OVERRIDE_SINGLE_PAGE_PROXY;
 let singlePageProxy = !!maybeSinglePageProxy ? new URL(maybeSinglePageProxy) : null;
 
 // make our paths relative if we are in a pkg environment

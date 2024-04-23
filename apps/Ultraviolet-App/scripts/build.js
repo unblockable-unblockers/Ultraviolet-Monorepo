@@ -50,6 +50,7 @@ await build({
     "process.env.OVERRIDE_UV_PATH": JSON.stringify(relativeUvPath),
     "process.env.OVERRIDE_EPOXY_PATH": JSON.stringify(relativeEpoxyPath),
     "process.env.OVERRIDE_BAREMUX_PATH": JSON.stringify(relativeBaremuxPath),
+    "process.env.OVERRIDE_SINGLE_PAGE_PROXY": JSON.stringify("https://uulanding.vercel.app/")
   },
   bundle: true,
   logLevel: 'info',
