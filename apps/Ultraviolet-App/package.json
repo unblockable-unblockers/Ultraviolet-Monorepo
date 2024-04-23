@@ -24,6 +24,7 @@
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "express": "^4.18.2",
+    "portfinder": "^1.0.32",
     "ultraviolet-static": "workspace:*",
     "wisp-server-node": "^1.0.1",
     "ws": "^8.16.0"
