@@ -53,7 +53,8 @@ if (runningInPkg) {
 const app = express();
 
 // improve performance
-app.use(compression());
+// i'm not sure how big of an impact that compression has on performance vs cpu time, it slows down replit like crazy
+// app.use(compression());
 
 // cookies
 app.use(cookieParser());
